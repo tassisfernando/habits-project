@@ -1,17 +1,38 @@
 import { TouchableOpacity, Dimensions, TouchableOpacityProps } from "react-native";
+import { generateProgressPercentage } from "../utils/generate-progress-percentage";
+import clsx from "clsx";
+import dayjs from "dayjs";
 
-const WEEEK_DAYS = 7; 
+const WEEEK_DAYS = 7;
 const SCREEN_HORIZONTAL_PADDING = (32 * 2) / 5;
 
 export const DAY_MARGIN_BETWEEN = 8;
 export const DAY_SIZE = Dimensions.get('screen').width / WEEEK_DAYS - (SCREEN_HORIZONTAL_PADDING + 5);
 
-interface Props extends TouchableOpacityProps {};
+interface Props extends TouchableOpacityProps {
+  amountOfHabits?: number;
+  amountCompleted?: number;
+  date: Date;
+};
 
-export function HabitDay({...rest}: Props) {
+export function HabitDay({ amountOfHabits = 0, amountCompleted = 0, date, ...rest }: Props) {
+  const amountAccomplishedPercentage = amountOfHabits > 0 ?
+    generateProgressPercentage(amountOfHabits, amountCompleted) : 0;
+  
+  const today = dayjs().startOf('day').toDate();
+  const isCurrentDay = dayjs(date).isSame(today);
+
   return (
-    <TouchableOpacity 
-      className="bg-zinc-700 rounded-lg border-2 m-1 border-zinc-800"
+    <TouchableOpacity
+      className={clsx("rounded-lg border-2 m-1", {
+        ["bg-zinc-900 border-zinc-800"] : amountAccomplishedPercentage === 0,
+        ["bg-violet-900 border-violet-700"] : amountAccomplishedPercentage > 0 && amountAccomplishedPercentage <= 20,
+        ["bg-violet-800 border-violet-600"] : amountAccomplishedPercentage > 20 && amountAccomplishedPercentage <= 40,
+        ["bg-violet-700 border-violet-500"] : amountAccomplishedPercentage > 40 && amountAccomplishedPercentage <= 60,
+        ["bg-violet-600 border-violet-500"] : amountAccomplishedPercentage > 60 && amountAccomplishedPercentage <= 80,
+        ["bg-violet-500 border-violet-400"] : amountAccomplishedPercentage > 80,
+        ["border-green-400 border-4"]: isCurrentDay
+      })}
       style={{ width: DAY_SIZE, height: DAY_SIZE }}
       activeOpacity={0.8}
       {...rest}
